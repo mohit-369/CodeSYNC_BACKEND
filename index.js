@@ -7,7 +7,7 @@ const { Server } = require("socket.io");
 const server = http.createServer(app);
 const io = new Server(server);
 const userSocketMap = {};
-const PORT=process.env.PORT;
+const PORT=process.env.PORT || 6000;
 
 const getAllConnectedClients = (roomId) => {
   return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(
