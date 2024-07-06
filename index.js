@@ -22,23 +22,44 @@ const getAllConnectedClients = (roomId) => {
 
 io.on('connection', (socket) => {
 
-  // console.log('socket id generation',socket.id);
+  console.log('socket id generation',socket.id);
 
-  socket.on("join", ({ roomId, userName }) => {
+  socket.on("join-room", ({ roomId, userName ,peerID}) => {
 
     userSocketMap[socket.id] = userName;
 
     socket.join(roomId);
 
+    console.log('join-room',userName);
+
     const updatedClients = getAllConnectedClients(roomId);
-    // console.log(updatedClients);
 
     updatedClients.forEach(({ socketId }) => {
-      io.to(socketId).emit("joined", {
+      io.to(socketId).emit("user-connected", {
         clients: updatedClients,
         userName,
-        socketId:socket.id
+        socketId:socket.id,
+        peerID
+  
       });
+    });
+
+    socket.to(roomId).emit('user-connected',({peerID,clients:updatedClients,socketId:socket.id,userName}))
+
+    socket.on("disconnecting", () => {
+      const rooms = [...socket.rooms];
+
+      rooms.forEach((roomId) => {
+        socket.in(roomId).emit("user-disconnected", {
+          socketId: socket.id,
+          userName: userSocketMap[socket.id],
+          peerID
+        });
+      });
+
+      delete userSocketMap[socket.id];
+
+      socket.leave();
     });
   });
 
@@ -49,22 +70,6 @@ io.on('connection', (socket) => {
   socket.on("codesync", ({code,socketId}) => {
     io.to(socketId).emit("change", { code });
   });
-
-  socket.on('disconnecting',()=>{
-    const rooms=[...socket.rooms];
-
-    rooms.forEach((roomId)=>{
-      socket.in(roomId).emit('disconnected',{
-        socketId:socket.id,
-        userName:userSocketMap[socket.id]
-      })
-    })
-
-    delete userSocketMap[socket.id];
-
-    socket.leave();
-
-  })
 });
 
 app.get("/", (req, res) => {
