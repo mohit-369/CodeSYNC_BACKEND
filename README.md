@@ -28,4 +28,4 @@ Access the live platform: [Code Sync](https://codeinit.netlify.app)
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/your-username/CodeSYNC_BACKEND.git
+   git clone https://github.com/mohit-369/CodeSYNC_BACKEND.git
